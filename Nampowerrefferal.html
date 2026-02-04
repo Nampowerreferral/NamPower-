@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Will You Be My Valentine?</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Georgia', serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+        }
+
+        .envelope {
+            position: relative;
+            width: 400px;
+            height: 300px;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+        }
+
+        .envelope:hover {
+            transform: scale(1.05);
+        }
+
+        .envelope-base {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: #f4e4d7;
+            border: 3px solid #d4b5a0;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            z-index: 5;
+        }
+
+        .envelope-flap {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 50%;
+            background: #e8d4c0;
+            border: 3px solid #d4b5a0;
+            border-bottom: none;
+            transform-origin: top center;
+            transition: transform 0.8s ease;
+            z-index: 10;
+            clip-path: polygon(0 0, 50% 60%, 100% 0);
+        }
+
+        .envelope.open .envelope-flap {
+            transform: rotateX(180deg);
+        }
+
+        .letter {
+            position: absolute;
+            width: 90%;
+            height: 85%;
+            background: white;
+            left: 5%;
+            top: 10%;
+            padding: 40px 30px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+            transition: top 0.8s ease;
+            z-index: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+        }
+
+        .envelope.open .letter {
+            top: -60%;
+            z-index: 15;
+        }
+
+        .question {
+            font-size: 28px;
+            color: #e91e63;
+            margin-bottom: 40px;
+            font-weight: bold;
+            line-height: 1.4;
+        }
+
+        .buttons {
+            display: flex;
+            gap: 20px;
+        }
+
+        button {
+            padding: 15px 30px;
+            font-size: 18px;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+
+        #yes-btn {
+            background: #ff6b9d;
+            color: white;
+        }
+
+        #yes-btn:hover {
+            background: #ff5588;
+            transform: scale(1.1);
+        }
+
+        #yes-more-btn {
+            background: #c44569;
+            color: white;
+        }
+
+        #yes-more-btn:hover {
+            background: #a83758;
+            transform: scale(1.1);
+        }
+
+        .click-hint {
+            position: absolute;
+            bottom: -50px;
+            font-size: 16px;
+            color: white;
+            text-align: center;
+            width: 100%;
+            opacity: 0;
+            animation: fadeInOut 2s ease-in-out infinite;
+        }
+
+        @keyframes fadeInOut {
+            0%, 100% { opacity: 0; }
+            50% { opacity: 1; }
+        }
+
+        .firework {
+            position: fixed;
+            width: 4px;
+            height: 4px;
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 1000;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .message {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 48px;
+            color: white;
+            font-weight: bold;
+            text-shadow: 2px 2px 10px rgba(0,0,0,0.5);
+            z-index: 999;
+            opacity: 0;
+            animation: fadeIn 1s ease forwards;
+        }
+
+        @keyframes fadeIn {
+            to { opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+    <div class="envelope" id="envelope">
+        <div class="envelope-base"></div>
+        <div class="envelope-flap"></div>
+        <div class="letter" id="letter">
+            <div class="question">Will you be my Valentine?</div>
+            <div class="buttons">
+                <button id="yes-btn">Yes!</button>
+                <button id="yes-more-btn">Yes Even More!</button>
+            </div>
+        </div>
+        <div class="click-hint">Click the envelope!</div>
+    </div>
+
+    <script>
+        const envelope = document.getElementById('envelope');
+        const yesBtn = document.getElementById('yes-btn');
+        const yesMoreBtn = document.getElementById('yes-more-btn');
+        let fireworksInterval;
+
+        envelope.addEventListener('click', function() {
+            envelope.classList.add('open');
+        });
+
+        function createFirework(x, y, intensity = 1) {
+            const colors = ['#ff6b9d', '#ffd93d', '#6bcf7f', '#4d9de0', '#e15554', '#c44569'];
+            const particles = 30 * intensity;
+            
+            for (let i = 0; i < particles; i++) {
+                const firework = document.createElement('div');
+                firework.className = 'firework';
+                firework.style.left = x + 'px';
+                firework.style.top = y + 'px';
+                firework.style.background = colors[Math.floor(Math.random() * colors.length)];
+                document.body.appendChild(firework);
+
+                const angle = (Math.PI * 2 * i) / particles;
+                const velocity = 2 + Math.random() * 3;
+                const vx = Math.cos(angle) * velocity * intensity;
+                const vy = Math.sin(angle) * velocity * intensity;
+
+                animateFirework(firework, vx, vy);
+            }
+        }
+
+        function animateFirework(element, vx, vy) {
+            let x = parseFloat(element.style.left);
+            let y = parseFloat(element.style.top);
+            let opacity = 1;
+            let gravity = 0.1;
+
+            function animate() {
+                x += vx;
+                y += vy;
+                vy += gravity;
+                opacity -= 0.015;
+
+                element.style.left = x + 'px';
+                element.style.top = y + 'px';
+                element.style.opacity = opacity;
+
+                if (opacity > 0) {
+                    requestAnimationFrame(animate);
+                } else {
+                    element.remove();
+                }
+            }
+
+            animate();
+        }
+
+        function launchRandomFireworks() {
+            const x = Math.random() * window.innerWidth;
+            const y = Math.random() * window.innerHeight * 0.6;
+            createFirework(x, y, 1.2);
+        }
+
+        yesBtn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            const message = document.createElement('div');
+            message.className = 'message';
+            message.textContent = '❤️ Yay! ❤️';
+            document.body.appendChild(message);
+
+            // Launch fireworks
+            for (let i = 0; i < 5; i++) {
+                setTimeout(() => {
+                    launchRandomFireworks();
+                }, i * 300);
+            }
+
+            fireworksInterval = setInterval(launchRandomFireworks, 800);
+        });
+
+        yesMoreBtn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            const message = document.createElement('div');
+            message.className = 'message';
+            message.textContent = '💖 YES! YES! YES! 💖';
+            document.body.appendChild(message);
+
+            // Launch LOTS of fireworks
+            for (let i = 0; i < 15; i++) {
+                setTimeout(() => {
+                    launchRandomFireworks();
+                    launchRandomFireworks();
+                }, i * 200);
+            }
+
+            fireworksInterval = setInterval(() => {
+                launchRandomFireworks();
+                launchRandomFireworks();
+            }, 600);
+        });
+    </script>
+</body>
+</html>
